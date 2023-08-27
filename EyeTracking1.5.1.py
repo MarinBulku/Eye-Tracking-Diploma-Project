@@ -69,10 +69,9 @@ blink_counter = 0
 tiredness_counter = 0
 blink_detected_time = None
 
-# Initialise gaze_x and gaze_y
+# Initialize gaze_x and gaze_y
 gaze_x, gaze_y = -1, -1
 
-# Main loop
 while True:
     ret, frame = cap.read()
 
@@ -95,35 +94,20 @@ while True:
         left_pupil_x, left_pupil_y = detect_pupil(gray[left_eye[0][1]:left_eye[-1][1], left_eye[0][0]:left_eye[-1][0]])
         right_pupil_x, right_pupil_y = detect_pupil(gray[right_eye[0][1]:right_eye[-1][1], right_eye[0][0]:right_eye[-1][0]])
 
-        # Initialize normalized_gaze_x and normalized_gaze_y
-        normalized_gaze_x, normalized_gaze_y = -1, -1
-
-        # Calculate the position of eye gaze on the screen
         if left_pupil_x is not None and left_pupil_y is not None and right_pupil_x is not None and right_pupil_y is not None:
             gaze_x = (left_pupil_x + right_pupil_x) // 2
             gaze_y = (left_pupil_y + right_pupil_y) // 2
-            # Normalize the gaze position to match the screen dimensions
-            normalized_gaze_x = int(gaze_x / frame.shape[1] * SCREEN_WIDTH)
-            normalized_gaze_y = int(gaze_y / frame.shape[0] * SCREEN_HEIGHT)
-
-            # Display the position of eye gaze as a yellow transparent circle on the screen
-            cv2.circle(frame, (normalized_gaze_x, normalized_gaze_y), 10, (0, 255, 255), -1)
 
             if gaze_x != -1 and gaze_y != -1:
-                # Normalize the gaze position to match the screen dimensions
                 normalized_gaze_x = int(gaze_x / frame.shape[1] * SCREEN_WIDTH)
                 normalized_gaze_y = int(gaze_y / frame.shape[0] * SCREEN_HEIGHT)
-                # Display the position of eye gaze as a yellow transparent circle on the screen
                 cv2.circle(frame, (normalized_gaze_x, normalized_gaze_y), 10, (0, 255, 255), -1)
-                gaze_position_text = f"Gaze Position: ({normalized_gaze_x}, {normalized_gaze_y})"
-            else:
-                gaze_position_text = "Gaze Position: Not detected"
 
         else:
-            # Handle the case when pupil detection fails
             gaze_position_text = "Pupil not detected"
+            normalized_gaze_x, normalized_gaze_y = -1, -1
+            cv2.putText(frame, gaze_position_text, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        # Calculate EAR and blink detection
         left_ear = eye_aspect_ratio(left_eye)
         right_ear = eye_aspect_ratio(right_eye)
         avg_ear = (left_ear + right_ear) / 2.0
@@ -137,7 +121,6 @@ while True:
 
         tiredness_counter = tiredness_counter + 1 if avg_ear < EAR_THRESHOLD else 0
 
-        # Display eye movements and tiredness level
         if gaze_x < normalized_gaze_x - 20:
             eye_movement_text = "Looking Left"
         elif gaze_x > normalized_gaze_x + 20:
@@ -145,23 +128,19 @@ while True:
         else:
             eye_movement_text = "Looking Straight"
 
-        tiredness_text = f"Appears like tired for: {tiredness_counter} ms" if tiredness_counter > TIREDNESS_THRESHOLD else "Not tired"
+        tiredness_text = f"Appears tired for: {tiredness_counter} ms" if tiredness_counter > TIREDNESS_THRESHOLD else "Not tired"
 
-        # Display blink detected text for 2 seconds
         if blink_detected_time is not None and time.time() - blink_detected_time < 2:
             cv2.putText(frame, "Blink Detected!", (frame.shape[1] - 150, frame.shape[0] - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-        # Display "Person appears tired" only if the person is tired
         if tiredness_counter > TIREDNESS_THRESHOLD:
             cv2.putText(frame, "Person appears tired", (10, frame.shape[0] - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-        # Display the eye movements and tiredness level as text in the window
-        cv2.putText(frame, gaze_position_text, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        if gaze_position_text != "Pupil not detected":
-            cv2.putText(frame, eye_movement_text, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.putText(frame, tiredness_text, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(frame, gaze_position_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(frame, eye_movement_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(frame, tiredness_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     cv2.imshow("Eye Tracking", frame)
 
