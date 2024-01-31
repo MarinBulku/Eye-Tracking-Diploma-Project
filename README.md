@@ -34,3 +34,5 @@ Below I have a guide on how to use this application.
 ![image](https://github.com/MarinBulku/Eye-Tracking-Diploma-Project/assets/104996044/a1e1eb49-2394-48f4-85c8-47dce9e22082)
 ![image](https://github.com/MarinBulku/Eye-Tracking-Diploma-Project/assets/104996044/59aaaaaf-ea80-4380-968e-f26db7829d07)
 
+For detecting faces and eyes i used dlib's face detector and shape_predictor_68_face_landmarks.dat to get the main points in the face, even though we use only the eyes. 
+This program is still in development, still has improvements to make.
